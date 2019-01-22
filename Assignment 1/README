@@ -1,0 +1,136 @@
+Name - Rushikesh Nalla
+SBU ID - 111971011
+CSE 538 Natural Language Processing
+Professor Niranjan Balasubramanian
+Assignment 1
+
+Used Python 3.5.3 for running the code.
+
+
+###############################################################################################################
+
+1) Batch Generation -
+
+Algorithm -
+For a given center word w_(c) where c in the index
+-> I would first go left of the center word w_(c-1)
+-> then go to the right w_(c+1)
+-> next go to w_(c-2)
+-> then go to w_(c+2) 
+and so on until we generate samples that equal num_skips.
+We then move on to the next center word and continue the same process until samples = batch_size are generated.
+
+
+###############################################################################################################
+
+2) Cross Entropy Loss -
+
+Best Configuration -
+batch_size = 32
+skip_window = 4
+num_skips = 4
+max_num_steps = 400001
+learning rate = 1
+
+## Calculating A = log(exp({u_o}^T v_c)) = {u_o}^T v_c
+For A - Performed matrix multiplication between inputs and true_w and took the diagnal part of it as we are interested in u_i*v_i.
+Output Shape = [batch_size x 1]
+
+## Calculating B = log(\sum{exp({u_w}^T v_c)})
+For B - Performed matrix multiplication between inputs and true_w and exponentiatied the results and summed over the row and then took log of the result.
+We want to basically take the summation of all the predicting words for a context word (like normalization).
+Output Shape = [batch_size x 1]
+
+Result (Cross Entropy Loss) = B - A
+
+
+##################################################################################################################
+
+3) NCE Loss -
+
+Best Configuration -
+batch_size = 32
+skip_window = 4
+num_skips = 4
+max_num_steps = 400001
+learning rate = 1
+
+## Part 1 - (Calculating log(Pr(D=1,w_o|w_c))) 
+
+Used embedding_lookup for finding the weights corresponding to the predicting labels.
+
+For computing s(wo, wc) - performed matrix multiplication between weights of context and predicting words and took the diagnal part of it because we need the dot product.
+Output Shape = [batch_size x 1]
+
+Bias term was added to the result. Used reshape function to get to the required shapes.
+Output Shape = [batch_size x 1]
+
+Converted unigram_prob to a tensor and for getting the unigram probablities of the labels I have used embedding_lookup.
+Output Shape = [batch_size x 1]
+
+Computed k*Pr(w_o) and took the log of the result.
+Output Shape = [batch_size x 1]
+
+Subtracted log(k*Pr(w_o)) from s(wo, wc) and passed it through sigmoid. Before taking the log of it, I had to add a very small value (1e-10) to avoid the issue of taking log(0).
+Output Shape = [batch_size x 1]
+
+## Part 2 - log(1 - Pr(D=1,w_x|w_c))
+
+Used embedding_lookup for finding the weights corresponding to the negative samples.
+Retrieved unigram probablities of negative samples using embedding_lookup.
+
+For computing s(wx, wc) - performed matrix multiplication between weights of context and negative samples as we need the product of each context word with all the negative samples.
+Output Shape = [batch_size x sample_size]
+
+Bias term was brought to the same shape as the multiplication result using the tile operation which just helps copies values across columns.
+Output Shape = [batch_size x sample_size]
+
+Took the unigram probablities of the negative samples using embedding_lookup.
+Computed k*Pr(w_x) and used tile function to match the shapes by replicating values and took the log of the result.
+Output Shape = [batch_size x sample_size]
+
+Subtracted log(k*Pr(w_x)) from s(wx, wc) and passed it through sigmoid and subtracted the result from one. Before taking the log of it, I had to add a very small value to avoid the issue of zero probability.
+Output Shape = [batch_size x sample_size]
+
+Did a summation over all the negative samples using reduce_sum function.
+
+In the end added both the results obtained in part 1 and part 2. Returned the negation of the result to obtain nce loss.
+
+
+##########################################################################################################################
+
+4) Word Analogy -
+
+Given some relation pairs and option pairs, I have to find the least and most illustrative pairs from the option pairs.
+
+Computed the difference vectors between each relation pairs
+Relation difference vector - The average of all difference vectors (3 relation pairs)
+Output - relation difference vector
+
+Computed the difference vectors between each option pairs
+Output - List of difference vectors, each one corresponding to an option pair
+
+Computed the cosine similarity between each option pair difference vector and relation difference vector.
+Output - List of cosine similarity values
+
+Least Illustrative - min(Cosine similarity values)
+Most Illustrative - max(Cosine similarity values)
+
+
+############################################################################################################################
+
+5) Top 20 words -
+
+Procedure -
+-> Loaded the pickle file to get the embeddings and the dictionary.
+-> Created a reverse dictionary to retrieve any word by using its word id.
+-> Converted the word embeddings to tuple for using it as a key in dictionary.
+-> Created a reverse embedding dictionary that returns the word id for a given embedding.
+-> Calculated the cosine similarity between the words in the vocabulary with the given word.
+-> Sorted all the embeddings in decreasing order based on the cosine similarity values.
+-> Took top 21 words based on the embeddings because the first word would be the given word itself.
+
+
+
+
+  

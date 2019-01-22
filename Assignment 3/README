@@ -1,0 +1,74 @@
+Name - Rushikesh Nalla
+ID - 111971011
+
+Used Python 2.7 and the word2vec.model given by the TA on blackboard for implementation.
+Config.py has some extra parameters for 2 and 3 hidden layer sizes
+
+1. Implementation of the arc-standard algorithm in ParsingSystem.py:
+
+Three possible transitions implemented in the apply() function:
+a) right reduce:
+- Retrieve the 2nd topmost element from the stack (head).
+- Retrieve the topmost element from the stack (dependent).
+- Retrieve the label.
+- Add an arc from head to dependent with the extracted label.
+- Remove topmost element from the stack.
+
+b) left reduce:
+- Retrieve the topmost element from the stack (head).
+- Retrieve the 2nd topmost element from the stack (dependent).
+- Retrieve the label.
+- Add an arc from head to dependent with the extracted label.
+- Remove 2nd topmost element from the stack.
+
+c) shift:
+- If the transition is none of the above then do a shift operation to move the element from top of buffer to top of stack.
+	
+2. Implementation of getFeatures() in DependencyParser.py:
+
+Features for words, tags and labels:
+a) words and tags:
+- Retrive top 3 elements of stack and buffer.
+- Retrieve the first leftmost and rightmost children of the top 2 words of the stack.
+- Retrieve the second leftmost and rightmost children of the top 2 words of the stack.
+- Retrieve the leftmost of leftmost and rightmost of rightmost children of the top 2 words of the stack.
+Output - 18 words and tags
+
+b) labels:
+- Retrieve the first leftmost and rightmost children of the top 2 words of the stack.
+- Retrieve the second leftmost and rightmost children of the top 2 words of the stack.
+- Get leftmost of leftmost and rightmost of rightmost children of the top 2 words of the stack.
+Output - 12 labels.
+
+Result - 48 tokens
+
+3. Implemention of neural network architecture including activation function:
+
+Dimensions:
+test_inputs: a placeholder of ints.
+train_inputs: batch_size * number of tokens
+train_labels: batch_size * number of transitions
+
+train_embed:  batch_size * (embedding_size * number of tokens)
+Obtained the embeddings using tf.nn.embedding_lookup and reshaped it to accordingly.
+
+biases_input: hidden_size. 
+Bias is added to the output of multiplication and was initialized with zeros.
+
+weights_input: (embedding_size * number of tokens) * hidden_size.
+Shape decided so as to satisfy multiplication with embeddings and output is batch_size * hidden_size. Weights initialized with normal (better results) and uniform distribution.
+
+weights_output: hidden_size * number of transitions. 
+Shape decided so as to satisfy multiplication with hidden layer output. We get probabilities for each possible transition as output in the end. Weights initialized with normal (better results) and uniform distribution.
+
+
+forward_pass algorithm:
+- Multiply weights_input with embeddings, add bias and apply activation function to obtain the hidden layer output.
+- Multiply weights_output with hidden layer output and return non-softmaxed values.
+- Tried different activation functions and hidden layers.
+
+4. Implementation of the loss function:
+
+- loss1 = Used sparse_softmax_cross_entropy_with_logits() function of tensor-flow to compute loss. Used greedy method to pick the transition with highest score using tf.argmax() over each row of the train_label tensor.
+- loss 2 = Used l2 regularization for all parameters weights_input, weights_output, biases_input and self.embeddings.
+- Overall loss = loss 1 + loss 2

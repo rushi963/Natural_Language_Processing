@@ -1,0 +1,8 @@
+HAM -
+https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=7846270&tag=1
+
+MEM2NN -
+http://papers.nips.cc/paper/5846-end-to-end-memory-networks.pdf
+
+LSTM -
+https://papers.nips.cc/paper/5945-teaching-machines-to-read-and-comprehend.pdf
